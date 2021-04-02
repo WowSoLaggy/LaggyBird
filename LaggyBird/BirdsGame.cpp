@@ -11,6 +11,8 @@
 
 namespace
 {
+  constexpr double FovLength = 200;
+
   const Dx::GameSettings& getGameSettings()
   {
     static Dx::GameSettings gameSettings{ 1600, 900, "Birds", "Data/Assets" };
@@ -41,9 +43,9 @@ namespace
     return (double)randomInt / 100;
   }
 
-  Sdk::Vector2D getSpeed(const double i_value, const double i_rotation)
+  Sdk::Vector2D getSpeed(const double i_rotation)
   {
-    Sdk::Vector2D speed { 0, -i_value };
+    Sdk::Vector2D speed { 0, -400 };
     speed.rotate(i_rotation, { 0, 0 });
     return speed;
   }
@@ -67,7 +69,7 @@ void BirdsGame::onGameStart()
     bird.setTexture("Bird.png");
     bird.setPosition(getRandomPointOnScreen());
     bird.setRotation(getRandomDirection());
-    bird.setSpeed(getSpeed(500, bird.getRotation()));
+    bird.setSpeed(getSpeed(bird.getRotation()));
     bird.setColor(Dx::Colors::DeepSkyBlue);
   }
 
@@ -77,10 +79,23 @@ void BirdsGame::onGameStart()
 }
 
 
+void BirdsGame::update(const double i_dt)
+{
+  if (d_pause)
+    return;
+
+  Game::update(i_dt);
+}
+
 void BirdsGame::updateObject(Dx::IObject& i_obj, const double i_dt)
 {
+  perception(i_obj);
   Game::updateObject(i_obj, i_dt);
+  teleportObject(i_obj);
+}
 
+void BirdsGame::teleportObject(Dx::IObject& i_obj)
+{
   auto pos = i_obj.getPosition();
   const auto speed = i_obj.getSpeed();
   const int screenWidth = getScreenWidth();
@@ -110,15 +125,78 @@ void BirdsGame::updateObject(Dx::IObject& i_obj, const double i_dt)
   }
 }
 
+void BirdsGame::perception(Dx::IObject& i_obj)
+{
+  if (!d_avoidMode)
+    return;
+
+  const auto& bird0 = *getObjectCollection().getObjects().front();
+  if (&i_obj == &bird0)
+    d_adjs.clear();
+
+  std::optional<double> closestDistance;
+  std::optional<double> closestAngle;
+
+  for (const auto birdPtr : getObjectCollection().getObjects())
+  {
+    const auto& bird = *birdPtr;
+    if (&i_obj == &bird)
+      continue;
+
+    const auto direction = bird.getPosition() - i_obj.getPosition();
+    const double distance = direction.length();
+    if (distance < FovLength)
+    {
+      const double angle = i_obj.getSpeed().angle(direction);
+      if (std::abs(angle) < d_fieldOfView / 2)
+      {
+        if (&i_obj == &bird0)
+          d_adjs.push_back({ bird0.getPositionF(), bird.getPositionF(), (float)distance });
+
+        if (!closestDistance || distance < *closestDistance)
+        {
+          closestDistance = distance;
+          closestAngle = angle;
+        }
+      }
+    }
+  }
+
+  if (closestAngle)
+  {
+    const double Force = 0.1;
+    const double ampl = (1 - (FovLength - *closestDistance) / FovLength) * Force;
+    const double angleDiff = *closestAngle > 0 ? -ampl : ampl;
+    const double newRotation = i_obj.getRotation() + angleDiff;
+    i_obj.setRotation(newRotation);
+    i_obj.setSpeed(getSpeed(newRotation));
+  }
+}
+
 
 void BirdsGame::renderObjects()
 {
-  if (d_fovShape)
-  {
-    auto& bird = getObjectCollection().getObjects().front();
-    Dx::Renderer2dGuard rendererGuard(getRenderer2d(), bird->getPosition(), { 0, 0 }, bird->getRotation());
-    getRenderer2d().renderShape(*d_fovShape);
-  }
-
+  renderFov();
   Game::renderObjects();
+  renderAvoid();
+}
+
+void BirdsGame::renderFov()
+{
+  if (!d_fovShape)
+    return;
+
+  auto& bird = *getObjectCollection().getObjects().front();
+  Dx::Renderer2dGuard rendererGuard(getRenderer2d(), bird.getPositionF(), { 0.0f, 0.0f }, (float)bird.getRotation());
+  getRenderer2d().renderShape(*d_fovShape);
+}
+
+void BirdsGame::renderAvoid()
+{
+  if (!d_avoidMode || d_adjs.empty())
+    return;
+
+  Dx::Renderer2dGuard rendererGuard(getRenderer2d());
+  for (const auto& adj : d_adjs)
+    getRenderer2d().renderLine(adj.p0, adj.p1, Dx::Colors::Red);
 }

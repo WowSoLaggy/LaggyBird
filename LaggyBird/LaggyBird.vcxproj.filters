@@ -29,5 +29,8 @@
     <ClInclude Include="BirdsGame.h">
       <Filter>src\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Adjacency.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
