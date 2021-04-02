@@ -184,7 +184,7 @@ void BirdsGame::perception(Dx::IObject& i_obj)
     i_obj.setSpeed(getSpeed(newRotation));
   }
 
-  if (d_matchMode)
+  if (d_matchMode && neighCount > 0)
   {
     avgNeighRotation /= (float)neighCount;
     const double diff = avgNeighRotation - i_obj.getRotation();
