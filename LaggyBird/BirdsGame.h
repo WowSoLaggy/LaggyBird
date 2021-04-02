@@ -1,6 +1,7 @@
 #pragma once
 
 #include <LaggyDx/Game.h>
+#include <LaggySdk/Math.h>
 
 
 class BirdsGame : public Dx::Game
@@ -15,7 +16,28 @@ public:
   virtual void renderObjects() override;
 
 private:
-  std::shared_ptr<Dx::IShape> d_shape;
+  void createActions();
+  
+  enum class Mode
+  {
+    Default = 0,
+    ShowPov,
+    Avoid,
+  };
+  Mode d_mode = Mode::Default;
+  void selectMode0();
+  void selectMode1();
+  void selectMode2();
+  void selectMode3();
 
-  void shorBirdFov();
+  bool d_birdIsSelected = false;
+  void switchBirdSelection();
+
+  float d_fieldOfView = Sdk::degToRad<float>(120.0f);
+  std::shared_ptr<Dx::IShape> d_fovShape;
+  void switchBirdFov();
+  void recreateBirdFov();
+  void increaseBirdFov();
+  void decreaseBirdFov();
+  void resetBirdFov();
 };

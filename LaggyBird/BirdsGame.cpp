@@ -71,9 +71,7 @@ void BirdsGame::onGameStart()
     bird.setColor(Dx::Colors::DeepSkyBlue);
   }
 
-  getActionsMap().setAction(Dx::KeyboardKey::S,
-                            Dx::Action(std::bind(&BirdsGame::shorBirdFov, this)),
-                            Dx::ActionType::OnPress);
+  createActions();
 
   getInputDevice().showCursor();
 }
@@ -115,11 +113,11 @@ void BirdsGame::updateObject(Dx::IObject& i_obj, const double i_dt)
 
 void BirdsGame::renderObjects()
 {
-  if (d_shape)
+  if (d_fovShape)
   {
     auto& bird = getObjectCollection().getObjects().front();
     Dx::Renderer2dGuard rendererGuard(getRenderer2d(), bird->getPosition(), { 0, 0 }, bird->getRotation());
-    getRenderer2d().renderShape(*d_shape);
+    getRenderer2d().renderShape(*d_fovShape);
   }
 
   Game::renderObjects();
