@@ -18,9 +18,12 @@
 x64/
 x86/
 bld/
-[Bb]in/
+[Bb]in/*
 [Oo]bj/
 [Ll]og/
+
+# Don't ignore 'Data' folder in the 'bin'
+!bin/Data
 
 # Visual Studio 2015 cache/options directory
 .vs/
