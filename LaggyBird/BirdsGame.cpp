@@ -11,11 +11,11 @@
 
 namespace
 {
-  constexpr double FovLength = 200;
-
-  const Dx::GameSettings& getGameSettings()
+const Dx::GameSettings& getGameSettings()
   {
-    static Dx::GameSettings gameSettings{ 1600, 900, "Birds", "Data/Assets" };
+    static Dx::GameSettings gameSettings{
+      Settings::ClientWidth, Settings::ClientHeight,
+      "Birds", "Data/Assets" };
     return gameSettings;
   }
 
@@ -33,8 +33,8 @@ namespace
     const auto& gameSettings = getGameSettings();
     
     return {
-      (double)Sdk::UniformIntGenerator<int>(0, 1600).getNextValue(),
-      (double)Sdk::UniformIntGenerator<int>(0, 900).getNextValue() };
+      (double)Sdk::UniformIntGenerator<int>(0, Settings::ClientWidth).getNextValue(),
+      (double)Sdk::UniformIntGenerator<int>(0, Settings::ClientHeight).getNextValue() };
   }
 
   double getRandomDirection()
@@ -45,7 +45,7 @@ namespace
 
   Sdk::Vector2D getSpeed(const double i_rotation)
   {
-    Sdk::Vector2D speed { 0, -400 };
+    Sdk::Vector2D speed { 0, -Settings::SpeedValue };
     speed.rotate(i_rotation, { 0, 0 });
     return speed;
   }
@@ -62,8 +62,7 @@ void BirdsGame::onGameStart()
 {
   getRenderDevice().setClearColor({ 0, 0, 0, 1 });
 
-  constexpr int numBirds = 50;
-  for (int i = 0; i < numBirds; ++i)
+  for (int i = 0; i < Settings::BirdsCount; ++i)
   {
     auto& bird = getObjectCollection().createObject();
     bird.setTexture("Bird.png");
@@ -101,41 +100,46 @@ void BirdsGame::teleportObject(Dx::IObject& i_obj)
   const int screenWidth = getScreenWidth();
   const int screenHeight = getScreenHeight();
 
-  constexpr int OffsetToTeleport = 64;
-  if (pos.x < -OffsetToTeleport && speed.x < 0)
+  if (pos.x < -Settings::OffsetToTeleport && speed.x < 0)
   {
-    pos.x = screenWidth + OffsetToTeleport;
+    pos.x = screenWidth + Settings::OffsetToTeleport;
     i_obj.setPosition(pos);
   }
-  else if (pos.x > screenWidth + OffsetToTeleport && speed.x > 0)
+  else if (pos.x > screenWidth + Settings::OffsetToTeleport && speed.x > 0)
   {
-    pos.x = -OffsetToTeleport;
+    pos.x = -Settings::OffsetToTeleport;
     i_obj.setPosition(pos);
   }
 
-  if (pos.y < -OffsetToTeleport && speed.y < 0)
+  if (pos.y < -Settings::OffsetToTeleport && speed.y < 0)
   {
-    pos.y = screenHeight + OffsetToTeleport;
+    pos.y = screenHeight + Settings::OffsetToTeleport;
     i_obj.setPosition(pos);
   }
-  else if (pos.y > screenHeight + OffsetToTeleport && speed.y > 0)
+  else if (pos.y > screenHeight + Settings::OffsetToTeleport && speed.y > 0)
   {
-    pos.y = -OffsetToTeleport;
+    pos.y = -Settings::OffsetToTeleport;
     i_obj.setPosition(pos);
   }
 }
 
 void BirdsGame::perception(Dx::IObject& i_obj)
 {
-  if (!d_avoidMode)
+  if (!d_avoidMode && !d_matchMode)
     return;
 
   const auto& bird0 = *getObjectCollection().getObjects().front();
   if (&i_obj == &bird0)
-    d_adjs.clear();
+  {
+    d_adjsToAvoid.clear();
+    d_adjsToMatch.clear();
+  }
 
   std::optional<double> closestDistance;
   std::optional<double> closestAngle;
+
+  double avgNeighRotation = 0;
+  int neighCount = 0;
 
   for (const auto birdPtr : getObjectCollection().getObjects())
   {
@@ -145,29 +149,47 @@ void BirdsGame::perception(Dx::IObject& i_obj)
 
     const auto direction = bird.getPosition() - i_obj.getPosition();
     const double distance = direction.length();
-    if (distance < FovLength)
+    if (distance < Settings::FovLength)
     {
       const double angle = i_obj.getSpeed().angle(direction);
       if (std::abs(angle) < d_fieldOfView / 2)
       {
         if (&i_obj == &bird0)
-          d_adjs.push_back({ bird0.getPositionF(), bird.getPositionF(), (float)distance });
+        {
+          const float relativeDistance = (float)(distance / Settings::FovLength);
+          d_adjsToAvoid.push_back({ bird0.getPositionF(), bird.getPositionF(), relativeDistance });
+          d_adjsToMatch.push_back({ bird0.getPositionF(), bird.getPositionF(), relativeDistance });
+        }
 
         if (!closestDistance || distance < *closestDistance)
         {
           closestDistance = distance;
           closestAngle = angle;
         }
+
+        avgNeighRotation += bird.getRotation();
+        ++neighCount;
       }
     }
   }
 
-  if (closestAngle)
+  if (d_avoidMode && closestAngle)
   {
-    const double Force = 0.1;
-    const double ampl = (1 - (FovLength - *closestDistance) / FovLength) * Force;
+    double ampl = *closestDistance / Settings::FovLength; // 0 - close, 1 - far
+    ampl = 1 - ampl; // 0 - far, 1 - close
+    ampl *= ampl * ampl * Settings::AvoidForce;
     const double angleDiff = *closestAngle > 0 ? -ampl : ampl;
     const double newRotation = i_obj.getRotation() + angleDiff;
+    i_obj.setRotation(newRotation);
+    i_obj.setSpeed(getSpeed(newRotation));
+  }
+
+  if (d_matchMode)
+  {
+    avgNeighRotation /= (float)neighCount;
+    const double diff = avgNeighRotation - i_obj.getRotation();
+    const double diffToAdd = diff > 0 ? Settings::MatchForce : -Settings::MatchForce;
+    const double newRotation = i_obj.getRotation() + diffToAdd;
     i_obj.setRotation(newRotation);
     i_obj.setSpeed(getSpeed(newRotation));
   }
@@ -179,7 +201,15 @@ void BirdsGame::renderObjects()
   renderFov();
   Game::renderObjects();
   renderAvoid();
+  renderMatch();
 }
+
+void BirdsGame::renderObject(const Dx::IObject& i_obj)
+{
+  Game::renderObject(i_obj);
+  renderVelocity(i_obj);
+}
+
 
 void BirdsGame::renderFov()
 {
@@ -193,10 +223,36 @@ void BirdsGame::renderFov()
 
 void BirdsGame::renderAvoid()
 {
-  if (!d_avoidMode || d_adjs.empty())
+  if (!d_avoidMode || d_adjsToAvoid.empty() || !d_birdIsSelected)
+    return;
+
+  for (const auto& adj : d_adjsToAvoid)
+  {
+    Dx::Renderer2dGuard rendererGuard(getRenderer2d());
+    getRenderer2d().renderLine(adj.p0, adj.p1,
+                               Dx::colorWithAlpha(Dx::Colors::Red, std::sqrt(1.0f - (float)adj.distance)));
+  }
+}
+
+void BirdsGame::renderMatch()
+{
+  if (!d_matchMode || d_adjsToMatch.empty() || !d_birdIsSelected)
     return;
 
   Dx::Renderer2dGuard rendererGuard(getRenderer2d());
-  for (const auto& adj : d_adjs)
-    getRenderer2d().renderLine(adj.p0, adj.p1, Dx::Colors::Red);
+  for (const auto& adj : d_adjsToMatch)
+    getRenderer2d().renderLine(adj.p0, adj.p1, Dx::Colors::AliceBlue);
+}
+
+void BirdsGame::renderVelocity(const Dx::IObject& i_obj)
+{
+  if (!d_matchMode || !d_birdIsSelected)
+    return;
+
+  auto endPoint = i_obj.getSpeedF();
+  endPoint.normalize();
+  endPoint = i_obj.getPositionF() + endPoint * Settings::DirectionVectorLength;
+
+  Dx::Renderer2dGuard rendererGuard(getRenderer2d());
+  getRenderer2d().renderLine(i_obj.getPositionF(), endPoint, Dx::Colors::DarkSeaGreen1);
 }

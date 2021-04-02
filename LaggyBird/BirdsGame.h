@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Adjacency.h"
+#include "Settings.h"
 
 #include <LaggyDx/Game.h>
 #include <LaggySdk/Math.h>
@@ -17,6 +18,7 @@ public:
   virtual void updateObject(Dx::IObject& i_obj, double i_dt) override;
 
   virtual void renderObjects() override;
+  virtual void renderObject(const Dx::IObject& i_obj) override;
 
 private:
   void createActions();
@@ -25,6 +27,8 @@ private:
   
   void renderFov();
   void renderAvoid();
+  void renderMatch();
+  void renderVelocity(const Dx::IObject& i_obj);
 
   bool d_pause = false;
   void switchPause();
@@ -32,8 +36,7 @@ private:
   bool d_birdIsSelected = false;
   void switchBirdSelection();
 
-  static constexpr float DefaultFieldOfView = Sdk::degToRad<float>(180.0f);
-  float d_fieldOfView = DefaultFieldOfView;
+  float d_fieldOfView = Settings::DefaultFieldOfView;
   std::shared_ptr<Dx::IShape> d_fovShape;
   void switchBirdFov();
   void recreateBirdFov();
@@ -42,9 +45,10 @@ private:
   void resetBirdFov();
 
   bool d_avoidMode = false;
-  std::vector<Adjacency> d_adjs;
+  std::vector<Adjacency> d_adjsToAvoid;
   void switchAvoidMode();
 
   bool d_matchMode = false;
+  std::vector<Adjacency> d_adjsToMatch;
   void switchMatchMode();
 };

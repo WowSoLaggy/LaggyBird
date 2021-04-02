@@ -32,5 +32,8 @@
     <ClInclude Include="Adjacency.h">
       <Filter>src\Game</Filter>
     </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>src\Game</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

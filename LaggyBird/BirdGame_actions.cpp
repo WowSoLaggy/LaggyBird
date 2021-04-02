@@ -63,27 +63,27 @@ void BirdsGame::switchBirdFov()
 void BirdsGame::recreateBirdFov()
 {
   const float fov2 = d_fieldOfView / 2;
-  d_fovShape = Dx::IShape::createCircle(100, 40, -fov2, fov2);
-  d_fovShape->setColor(Dx::colorWithAlpha(Dx::Colors::White, 0.5f));
+  d_fovShape = Dx::IShape::createCircle(Settings::FovLength, Settings::PointsForCircle, -fov2, fov2);
+  d_fovShape->setColor(Dx::colorWithAlpha(Dx::Colors::White, Settings::FovAlpha));
 }
 
 void BirdsGame::increaseBirdFov()
 {
-  d_fieldOfView = std::min(d_fieldOfView + Sdk::degToRad<float>(5), Sdk::degToRad<float>(360));
+  d_fieldOfView = std::min(d_fieldOfView + Settings::FovIncrementRad, Settings::MaxFovRad);
   if (d_fovShape)
     recreateBirdFov();
 }
 
 void BirdsGame::decreaseBirdFov()
 {
-  d_fieldOfView = std::max(d_fieldOfView - Sdk::degToRad<float>(5), Sdk::degToRad<float>(5));
+  d_fieldOfView = std::max(d_fieldOfView - Settings::FovIncrementRad, Settings::MinFovRad);
   if (d_fovShape)
     recreateBirdFov();
 }
 
 void BirdsGame::resetBirdFov()
 {
-  d_fieldOfView = DefaultFieldOfView;
+  d_fieldOfView = Settings::DefaultFieldOfView;
   if (d_fovShape)
     recreateBirdFov();
 }
