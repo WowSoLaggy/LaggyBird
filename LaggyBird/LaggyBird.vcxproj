@@ -163,6 +163,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BirdGame_actions.cpp" />
+    <ClCompile Include="BirdGame_gui.cpp" />
     <ClCompile Include="BirdsGame.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp">

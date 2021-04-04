@@ -23,6 +23,7 @@ public:
 
 private:
   void createActions();
+  void createGui();
   void teleportObject(Dx::IObject& i_obj);
   void perception(Dx::IObject& i_obj);
   

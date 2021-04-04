@@ -21,6 +21,9 @@
     <ClCompile Include="BirdGame_actions.cpp">
       <Filter>src\Game</Filter>
     </ClCompile>
+    <ClCompile Include="BirdGame_gui.cpp">
+      <Filter>src\Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

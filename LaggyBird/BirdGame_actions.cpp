@@ -8,6 +8,9 @@
 
 void BirdsGame::createActions()
 {
+  getActionsMap().setAction(Dx::KeyboardKey::Escape,
+                            Dx::Action(std::bind(&BirdsGame::stop, this)),
+                            Dx::ActionType::OnPress);
   getActionsMap().setAction(Dx::KeyboardKey::Space,
                             Dx::Action(std::bind(&BirdsGame::switchPause, this)),
                             Dx::ActionType::OnPress);
