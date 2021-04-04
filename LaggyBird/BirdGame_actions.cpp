@@ -22,6 +22,9 @@ void BirdsGame::createActions()
   getActionsMap().setAction(Dx::KeyboardKey::D2,
                             Dx::Action(std::bind(&BirdsGame::switchMatchMode, this)),
                             Dx::ActionType::OnPress);
+  getActionsMap().setAction(Dx::KeyboardKey::D3,
+                            Dx::Action(std::bind(&BirdsGame::switchFlockMode, this)),
+                            Dx::ActionType::OnPress);
 
   getActionsMap().setAction(Dx::KeyboardKey::OemPlus,
                             Dx::Action(std::bind(&BirdsGame::increaseBirdFov, this)),
@@ -98,4 +101,10 @@ void BirdsGame::switchAvoidMode()
 void BirdsGame::switchMatchMode()
 {
   d_matchMode = !d_matchMode;
+}
+
+
+void BirdsGame::switchFlockMode()
+{
+  d_flockMode = !d_flockMode;
 }

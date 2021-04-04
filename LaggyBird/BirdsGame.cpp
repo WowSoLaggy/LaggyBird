@@ -5,6 +5,7 @@
 #include <LaggyDx/GameSettings.h>
 #include <LaggyDx/IObject.h>
 #include <LaggyDx/Renderer2dGuard.h>
+#include <LaggyDx/IResourceController.h>
 
 #include <LaggySdk/UniformIntGenerator.h>
 
@@ -72,6 +73,10 @@ void BirdsGame::onGameStart()
     bird.setColor(Dx::Colors::DeepSkyBlue);
   }
 
+  d_flockCenter.setTexture(getResourceController().getTextureResource("Mark.png"));
+  d_flockCenter.resetSizeToTexture();
+  d_flockCenterSize = { (float)d_flockCenter.getSize().x, (float)d_flockCenter.getSize().y };
+
   createActions();
 
   getInputDevice().showCursor();
@@ -125,20 +130,18 @@ void BirdsGame::teleportObject(Dx::IObject& i_obj)
 
 void BirdsGame::perception(Dx::IObject& i_obj)
 {
-  if (!d_avoidMode && !d_matchMode)
+  if (!d_avoidMode && !d_matchMode && !d_flockMode)
     return;
 
   const auto& bird0 = *getObjectCollection().getObjects().front();
   if (&i_obj == &bird0)
-  {
-    d_adjsToAvoid.clear();
-    d_adjsToMatch.clear();
-  }
+    d_adjs.clear();
 
   std::optional<double> closestDistance;
   std::optional<double> closestAngle;
 
   double avgNeighRotation = 0;
+  Sdk::Vector2F avgNeighPosition;
   int neighCount = 0;
 
   for (const auto birdPtr : getObjectCollection().getObjects())
@@ -157,8 +160,7 @@ void BirdsGame::perception(Dx::IObject& i_obj)
         if (&i_obj == &bird0)
         {
           const float relativeDistance = (float)(distance / Settings::FovLength);
-          d_adjsToAvoid.push_back({ bird0.getPositionF(), bird.getPositionF(), relativeDistance });
-          d_adjsToMatch.push_back({ bird0.getPositionF(), bird.getPositionF(), relativeDistance });
+          d_adjs.push_back({ bird0.getPositionF(), bird.getPositionF(), relativeDistance });
         }
 
         if (!closestDistance || distance < *closestDistance)
@@ -168,6 +170,7 @@ void BirdsGame::perception(Dx::IObject& i_obj)
         }
 
         avgNeighRotation += bird.getRotation();
+        avgNeighPosition += bird.getPositionF();
         ++neighCount;
       }
     }
@@ -193,6 +196,17 @@ void BirdsGame::perception(Dx::IObject& i_obj)
     i_obj.setRotation(newRotation);
     i_obj.setSpeed(getSpeed(newRotation));
   }
+
+  if (d_flockMode && neighCount > 0)
+  {
+    avgNeighPosition /= (float)neighCount;
+    const auto dirToFlockCenter = avgNeighPosition - i_obj.getPositionF();
+    const double angle = i_obj.getSpeedF().angle(dirToFlockCenter);
+    const double angleToAdd = angle > 0 ? Settings::FlockForce : -Settings::FlockForce;
+    const double newRotation = i_obj.getRotation() + angleToAdd;
+    i_obj.setRotation(newRotation);
+    i_obj.setSpeed(getSpeed(newRotation));
+  }
 }
 
 
@@ -202,6 +216,7 @@ void BirdsGame::renderObjects()
   Game::renderObjects();
   renderAvoid();
   renderMatch();
+  renderFlockCenter();
 }
 
 void BirdsGame::renderObject(const Dx::IObject& i_obj)
@@ -223,10 +238,10 @@ void BirdsGame::renderFov()
 
 void BirdsGame::renderAvoid()
 {
-  if (!d_avoidMode || d_adjsToAvoid.empty() || !d_birdIsSelected)
+  if (!d_avoidMode || d_adjs.empty() || !d_birdIsSelected)
     return;
 
-  for (const auto& adj : d_adjsToAvoid)
+  for (const auto& adj : d_adjs)
   {
     Dx::Renderer2dGuard rendererGuard(getRenderer2d());
     getRenderer2d().renderLine(adj.p0, adj.p1,
@@ -236,11 +251,11 @@ void BirdsGame::renderAvoid()
 
 void BirdsGame::renderMatch()
 {
-  if (!d_matchMode || d_adjsToMatch.empty() || !d_birdIsSelected)
+  if (!d_matchMode || d_adjs.empty() || !d_birdIsSelected)
     return;
 
   Dx::Renderer2dGuard rendererGuard(getRenderer2d());
-  for (const auto& adj : d_adjsToMatch)
+  for (const auto& adj : d_adjs)
     getRenderer2d().renderLine(adj.p0, adj.p1, Dx::Colors::AliceBlue);
 }
 
@@ -255,4 +270,18 @@ void BirdsGame::renderVelocity(const Dx::IObject& i_obj)
 
   Dx::Renderer2dGuard rendererGuard(getRenderer2d());
   getRenderer2d().renderLine(i_obj.getPositionF(), endPoint, Dx::Colors::DarkSeaGreen1);
+}
+
+void BirdsGame::renderFlockCenter()
+{
+  if (!d_flockMode || d_adjs.empty() || !d_birdIsSelected)
+    return;
+
+  Sdk::Vector2F flockCenter;
+  for (const auto& adj : d_adjs)
+    flockCenter += adj.p1;
+  flockCenter /= (float)d_adjs.size();
+
+  Dx::Renderer2dGuard rendererGuard(getRenderer2d(), flockCenter - d_flockCenterSize / 2.0f);
+  getRenderer2d().renderSprite(d_flockCenter);
 }

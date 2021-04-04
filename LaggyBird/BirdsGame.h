@@ -4,6 +4,7 @@
 #include "Settings.h"
 
 #include <LaggyDx/Game.h>
+#include <LaggyDx/Sprite.h>
 #include <LaggySdk/Math.h>
 
 
@@ -29,6 +30,7 @@ private:
   void renderAvoid();
   void renderMatch();
   void renderVelocity(const Dx::IObject& i_obj);
+  void renderFlockCenter();
 
   bool d_pause = false;
   void switchPause();
@@ -45,10 +47,14 @@ private:
   void resetBirdFov();
 
   bool d_avoidMode = false;
-  std::vector<Adjacency> d_adjsToAvoid;
+  std::vector<Adjacency> d_adjs;
   void switchAvoidMode();
 
   bool d_matchMode = false;
-  std::vector<Adjacency> d_adjsToMatch;
   void switchMatchMode();
+
+  bool d_flockMode = false;
+  Dx::Sprite d_flockCenter;
+  Sdk::Vector2F d_flockCenterSize;
+  void switchFlockMode();
 };

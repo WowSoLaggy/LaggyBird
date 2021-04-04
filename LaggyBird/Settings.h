@@ -9,11 +9,11 @@ public:
   static constexpr int ClientWidth = 1600;
   static constexpr int ClientHeight = 900;
 
-  static constexpr int OffsetToTeleport = 64;
+  static constexpr int OffsetToTeleport = 32;
   static constexpr int PointsForCircle = 40;
 
-  static constexpr int BirdsCount = 100;
-  static constexpr double SpeedValue = 300;
+  static constexpr int BirdsCount = 200;
+  static constexpr double SpeedValue = 500;
 
   static constexpr double FovLength = 100;
   static constexpr float FovAlpha = 0.5f;
@@ -25,8 +25,9 @@ public:
   static constexpr float FovIncrementDeg = 5;
   static constexpr float FovIncrementRad = Sdk::degToRad<float>(FovIncrementDeg);
 
-  static constexpr double AvoidForce = 0.2;
+  static constexpr double AvoidForce = 0.3;
   static constexpr double MatchForce = 0.02;
+  static constexpr double FlockForce = 0.05;
 
   static constexpr float DirectionVectorLength = 50;
 };
