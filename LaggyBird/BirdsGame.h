@@ -23,7 +23,6 @@ public:
 
 private:
   void createActions();
-  void createGui();
   void teleportObject(Dx::IObject& i_obj);
   void perception(Dx::IObject& i_obj);
   
@@ -35,6 +34,11 @@ private:
 
   bool d_pause = false;
   void switchPause();
+
+  void switchTooltip();
+  void createTooltip();
+  void deleteTooltip();
+  std::shared_ptr<Dx::Label> d_tooltip;
 
   bool d_birdIsSelected = false;
   void switchBirdSelection();

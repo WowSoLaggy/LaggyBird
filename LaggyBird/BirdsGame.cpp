@@ -78,7 +78,7 @@ void BirdsGame::onGameStart()
   d_flockCenterSize = { (float)d_flockCenter.getSize().x, (float)d_flockCenter.getSize().y };
 
   createActions();
-  createGui();
+  createTooltip();
 
   getInputDevice().showCursor();
 }

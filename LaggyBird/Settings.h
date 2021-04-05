@@ -13,7 +13,7 @@ public:
   static constexpr int PointsForCircle = 40;
 
   static constexpr int BirdsCount = 200;
-  static constexpr double SpeedValue = 500;
+  static constexpr double SpeedValue = 400;
 
   static constexpr double FovLength = 100;
   static constexpr float FovAlpha = 0.5f;

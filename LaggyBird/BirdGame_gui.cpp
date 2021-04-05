@@ -4,26 +4,38 @@
 #include <LaggyDx/Label.h>
 
 
-void BirdsGame::createGui()
+void BirdsGame::createTooltip()
 {
-  auto label = std::make_shared<Dx::Label>();
-  label->setFont("play.spritefont");
-  label->setText("Welcome to the Bird Flock Simulation!\n" \
+  CONTRACT_EXPECT(!d_tooltip);
+
+  d_tooltip = std::make_shared<Dx::Label>();
+  d_tooltip->setFont("play.spritefont");
+  d_tooltip->setText("Welcome to the Bird Flock Simulation!\n" \
                  "\n" \
                  "Controls:\n" \
                  "'Esc' - exit\n" \
                  "'Space' - pause\n" \
+                 "'F1' - show / hide this tooltip\n" \
                  "\n" \
                  "Modes:\n" \
-                 "'~' - show metadata\n" \
-                 "'1' - enable collision avoidance\n" \
-                 "'2' - enable direction matching\n" \
-                 "'3' - enable flocking\n" \
+                 "'~' - show / hide metadata\n" \
+                 "'1' - switch collision avoidance\n" \
+                 "'2' - switch direction matching\n" \
+                 "'3' - switch flocking\n" \
                  "\n" \
                  "Field of view:\n" \
                  "'-' - decrease FOV\n" \
                  "'+' - increase FOV\n" \
                  "'0' - reset FOV");
-  label->setPosition({ 32, 32 });
-  getForm().addChild(label);
+  d_tooltip->setPosition({ 32, 32 });
+
+  getForm().addChild(d_tooltip);
+}
+
+void BirdsGame::deleteTooltip()
+{
+  CONTRACT_EXPECT(d_tooltip);
+
+  getForm().removeChild(*d_tooltip);
+  d_tooltip.reset();
 }

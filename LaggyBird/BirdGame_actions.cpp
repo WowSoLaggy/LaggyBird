@@ -11,6 +11,9 @@ void BirdsGame::createActions()
   getActionsMap().setAction(Dx::KeyboardKey::Escape,
                             Dx::Action(std::bind(&BirdsGame::stop, this)),
                             Dx::ActionType::OnPress);
+  getActionsMap().setAction(Dx::KeyboardKey::F1,
+                            Dx::Action(std::bind(&BirdsGame::switchTooltip, this)),
+                            Dx::ActionType::OnPress);
   getActionsMap().setAction(Dx::KeyboardKey::Space,
                             Dx::Action(std::bind(&BirdsGame::switchPause, this)),
                             Dx::ActionType::OnPress);
@@ -44,6 +47,15 @@ void BirdsGame::createActions()
 void BirdsGame::switchPause()
 {
   d_pause = !d_pause;
+}
+
+
+void BirdsGame::switchTooltip()
+{
+  if (d_tooltip)
+    deleteTooltip();
+  else
+    createTooltip();
 }
 
 
