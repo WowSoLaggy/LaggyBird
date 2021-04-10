@@ -16,16 +16,16 @@ Three simple behaviors are available:
 Each of these modes can be switched separately using hotkeys.
 
 ## Hotkeys
-* Esc - exit app
-* Space - pause
-* F1 - show / hide tooltip
-* ~ - show metadata (FOV, direction, flock center, collisions avoidance weight)
-* 1 - switch collision avoidance mode
-* 2 - switch direction matching mode
-* 3 - switch flocking mode
-* - - decrease FOV
-* + - increase FOV
-* 0 - reset FOV
+* 'Esc' - exit app
+* 'Space' - pause
+* 'F1' - show / hide tooltip
+* '~' - show metadata (FOV, direction, flock center, collisions avoidance weight)
+* '1' - switch collision avoidance mode
+* '2' - switch direction matching mode
+* '3' - switch flocking mode
+* '-' - decrease FOV
+* '+' - increase FOV
+* '0' - reset FOV
 
 ## Used code
 [LaggyDx](https://github.com/WowSoLaggy/LaggyDx) is used as a DirectX framework.
