@@ -55,7 +55,7 @@ void BirdsGame::switchTooltip()
   if (d_tooltip)
     deleteTooltip();
   else
-    createTooltip();
+    createTooltip(false);
 }
 
 

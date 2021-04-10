@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "BirdsGame.h"
 
+#include <LaggyDx/FadeOutEffect.h>
 #include <LaggyDx/Label.h>
 
 
-void BirdsGame::createTooltip()
+void BirdsGame::createTooltip(const bool i_withEffect)
 {
   CONTRACT_EXPECT(!d_tooltip);
 
@@ -28,6 +29,13 @@ void BirdsGame::createTooltip()
                  "'+' - increase FOV\n" \
                  "'0' - reset FOV");
   d_tooltip->setPosition({ 32, 32 });
+
+  if (i_withEffect)
+  {
+    auto effect = std::make_shared<Dx::FadeOutEffect>(5, 1);
+    effect->setOnFinishHandler(std::bind(&BirdsGame::deleteTooltip, this));
+    d_tooltip->addEffect(effect);
+  }
 
   getForm().addChild(d_tooltip);
 }

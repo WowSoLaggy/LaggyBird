@@ -36,7 +36,7 @@ private:
   void switchPause();
 
   void switchTooltip();
-  void createTooltip();
+  void createTooltip(bool i_withEffect);
   void deleteTooltip();
   std::shared_ptr<Dx::Label> d_tooltip;
 
