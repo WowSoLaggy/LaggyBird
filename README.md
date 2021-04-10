@@ -13,7 +13,7 @@ Three simple behaviors are available:
 2. Direction matching - each bird tries to match own speed with the speed of all nearby neighbours
 3. Flocking - each bird tries to keep closer to the center of the nearby flock
 
-Each if these modes can be switched separately using hotkeys.
+Each of these modes can be switched separately using hotkeys.
 
 ## Hotkeys
 * Esc - exit app
