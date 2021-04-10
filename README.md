@@ -5,7 +5,8 @@
 Simple app that simulates bird flocks using the distributed behavioral model.
 Done following the paper: http://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/
 
-Each bird is described by position, orientation, speed vector and customizable FOV
+## Behavior
+Each bird is described by position, orientation, speed vector and customizable FOV.
 
 Three simple behaviors are available:
 1. Collision avoidance - each bird tries to avoid collision with the closest birds
@@ -14,7 +15,7 @@ Three simple behaviors are available:
 
 Each if these modes can be switched separately using hotkeys.
 
-Hotkeys:
+## Hotkeys
 * Esc - exit app
 * Space - pause
 * F1 - show / hide tooltip
@@ -26,5 +27,7 @@ Hotkeys:
 * + - increase FOV
 * 0 - reset FOV
 
+## Used code
 [LaggyDx](https://github.com/WowSoLaggy/LaggyDx) is used as a DirectX framework.
+
 [LaggySdk](https://github.com/WowSoLaggy/LaggySdk) is used as an SDK framework.
