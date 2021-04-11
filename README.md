@@ -28,6 +28,5 @@ Each of these modes can be switched separately using hotkeys.
 * '0' - reset FOV
 
 ## Used code
-[LaggyDx](https://github.com/WowSoLaggy/LaggyDx) is used as a DirectX framework.
-
+[LaggyDx](https://github.com/WowSoLaggy/LaggyDx) is used as a DirectX framework.  
 [LaggySdk](https://github.com/WowSoLaggy/LaggySdk) is used as an SDK framework.
